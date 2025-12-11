@@ -1,0 +1,678 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>AI Sales Coach powered by RTMS</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      
+      body { 
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        margin: 0; 
+        padding: 0;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        color: #333;
+      }
+      
+      .container {
+        max-width: 480px;
+        margin: 0 auto;
+        padding: 10px;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+      
+      
+      .main-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      
+      .card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        overflow: hidden;
+      }
+      
+      .live-transcript {
+        max-height: 120px;
+        overflow-y: auto;
+        border-bottom: 1px solid #f0f0f0;
+      }
+      
+      .transcript-header {
+        padding: 8px 16px;
+        background: #f8f9fa;
+        border-bottom: 1px solid #e9ecef;
+        font-weight: 600;
+        font-size: 12px;
+        color: #495057;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      
+      .transcript-entry {
+        padding: 8px 16px;
+        border-bottom: 1px solid #f8f9fa;
+      }
+      
+      .transcript-entry:last-child {
+        border-bottom: none;
+      }
+      
+      .transcript-entry.new-entry {
+        background: #e3f2fd;
+        animation: highlight 3s ease-out;
+      }
+      
+      @keyframes highlight {
+        0% { background: #e3f2fd; }
+        100% { background: transparent; }
+      }
+      
+      .speaker-name {
+        font-weight: 600;
+        font-size: 12px;
+        color: #6c757d;
+        margin-bottom: 4px;
+      }
+      
+      .transcript-text {
+        font-size: 14px;
+        line-height: 1.4;
+        color: #212529;
+      }
+      
+      .empty-transcript {
+        padding: 20px 16px;
+        text-align: center;
+        color: #6c757d;
+        font-size: 12px;
+      }
+      
+      .ai-insights {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+      }
+      
+      .insights-header {
+        padding: 16px 20px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        font-weight: 600;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      
+      .insights-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-height: 300px;
+      }
+      
+      .insight-item {
+        padding: 16px 20px;
+        border-bottom: 1px solid #f0f0f0;
+        animation: slideUp 0.5s ease-out;
+      }
+      
+      .insight-item:last-child {
+        border-bottom: none;
+      }
+      
+      @keyframes slideUp {
+        0% {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        100% {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      
+      .insight-type {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+      }
+      
+      .insight-type.advice {
+        background: #d4edda;
+        color: #155724;
+      }
+      
+      .insight-type.objection {
+        background: #f8d7da;
+        color: #721c24;
+      }
+      
+      .insight-type.opportunity {
+        background: #ffeaa7;
+        color: #856404;
+      }
+      
+      .insight-type.warning {
+        background: #fff3cd;
+        color: #856404;
+      }
+      
+      .insight-content {
+        font-size: 14px;
+        line-height: 1.5;
+        color: #495057;
+      }
+      
+      .insight-confidence {
+        margin-top: 8px;
+        font-size: 12px;
+        color: #6c757d;
+      }
+      
+      .empty-insights {
+        padding: 40px 20px;
+        text-align: center;
+        color: #6c757d;
+        font-size: 14px;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+      }
+      
+      .empty-icon {
+        font-size: 48px;
+        margin-bottom: 16px;
+        opacity: 0.5;
+      }
+      
+      .analyzing-indicator {
+        display: none;
+        padding: 16px 20px;
+        background: #f8f9fa;
+        border-bottom: 1px solid #e9ecef;
+        font-size: 14px;
+        color: #6c757d;
+        align-items: center;
+        gap: 12px;
+      }
+      
+      .analyzing-indicator.active {
+        display: flex;
+      }
+      
+      .spinner {
+        width: 20px;
+        height: 20px;
+        border: 2px solid #e9ecef;
+        border-top: 2px solid #667eea;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+      
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+      
+      .quick-actions {
+        padding: 16px 20px;
+        background: #f8f9fa;
+        border-top: 1px solid #e9ecef;
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      
+      .action-btn {
+        padding: 6px 12px;
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 20px;
+        font-size: 12px;
+        color: #495057;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      
+      .action-btn:hover {
+        background: #667eea;
+        color: white;
+        border-color: #667eea;
+      }
+
+      /* Scrollbar styling */
+      ::-webkit-scrollbar {
+        width: 6px;
+      }
+      
+      ::-webkit-scrollbar-track {
+        background: #f1f1f1;
+      }
+      
+      ::-webkit-scrollbar-thumb {
+        background: #ccc;
+        border-radius: 3px;
+      }
+      
+      ::-webkit-scrollbar-thumb:hover {
+        background: #999;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+
+      <div class="main-content">
+        <!-- Live Transcript Feed -->
+         
+        <div class="card">
+          <div class="transcript-header">
+            Live Conversation
+          </div>
+          <div class="live-transcript" id="transcript-container">
+            <div class="empty-transcript">
+              Waiting for conversation to start...
+            </div>
+          </div>
+        </div>
+       
+
+        <!-- AI Insights and Coaching -->
+        <div class="card ai-insights">
+          <div class="analyzing-indicator" id="analyzing-indicator">
+            <div class="spinner"></div>
+            Analyzing conversation...
+          </div>
+          <div class="insights-content" id="insights-container">
+            <div class="empty-insights">
+              <div class="empty-icon"></div>
+              <div>Insights will appear here as the conversation progresses</div>
+            </div>
+          </div>
+          <div class="quick-actions">
+            <button class="action-btn" onclick="generateInsight('objections')">Handle Objections</button>
+            <button class="action-btn" onclick="generateInsight('closing')">Closing Techniques</button>
+            <button class="action-btn" onclick="generateInsight('rapport')">Build Rapport</button>
+            <button class="action-btn" onclick="generateInsight('summary')">Conversation Summary</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Mock knowledge base - in production this would be loaded from a file
+      const SALES_KNOWLEDGE_BASE = {
+        objections: {
+          price: "When facing price objections, focus on value. Ask: 'What would need to happen for this to be a worthwhile investment?' Break down ROI and long-term benefits.",
+          timing: "For timing objections, create urgency. Mention limited-time offers, seasonal benefits, or competitive advantages of acting now.",
+          authority: "When they need to check with someone else, ask: 'What information would help them make a positive decision?' Offer to speak directly with decision makers.",
+          trust: "Build credibility with case studies, testimonials, and guarantees. Address concerns directly and transparently."
+        },
+        closingTechniques: [
+          "Assumptive Close: 'When would you like to get started?'",
+          "Alternative Close: 'Would you prefer option A or option B?'",
+          "Summary Close: Recap key benefits and ask for commitment",
+          "Urgency Close: Highlight time-sensitive benefits or scarcity"
+        ],
+        rapportBuilding: [
+          "Mirror their communication style and pace",
+          "Find common ground through shared interests or experiences",
+          "Ask open-ended questions about their business challenges",
+          "Listen actively and reference previous conversation points"
+        ]
+      };
+
+      // UI Elements
+      const statusDot = document.getElementById('status-dot');
+      const statusText = document.getElementById('status-text');
+      const transcriptContainer = document.getElementById('transcript-container');
+      const insightsContainer = document.getElementById('insights-container');
+      const analyzingIndicator = document.getElementById('analyzing-indicator');
+      
+      // State
+      let transcripts = [];
+      let lastTranscriptCount = 0;
+      let analysisTimeout = null;
+      let insightCounter = 0;
+      let lastAnalysisTime = 0;
+      let isAnalyzing = false;
+
+      // Get meeting ID from URL params
+      function getMeetingIdFromUrl() {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get('meetingId')?.replace(/ /g, '+');
+      }
+
+      // Format time for display
+      function formatTime(timestamp_ms) {
+        const date = new Date(timestamp_ms);
+        return date.toLocaleTimeString('en-US', {
+          hour: 'numeric',
+          minute: '2-digit',
+          hour12: true
+        });
+      }
+
+      // Render live transcript
+      function renderTranscript() {
+        if (transcripts.length === 0) {
+          transcriptContainer.innerHTML = '<div class="empty-transcript">Waiting for conversation to start...</div>';
+          return;
+        }
+
+        // Show last 5 transcript entries
+        const recentTranscripts = transcripts.slice(-5);
+        
+        const html = recentTranscripts.map((transcript, index) => {
+          const data = transcript.data;
+          const speaker = data?.speaker_name || 'Unknown';
+          const text = data?.transcription?.transcript || data?.transcript || '';
+          const isNew = index >= lastTranscriptCount - 5 + recentTranscripts.length - 1;
+          
+          return `
+            <div class="transcript-entry ${isNew ? 'new-entry' : ''}">
+              <div class="speaker-name">${speaker}</div>
+              <div class="transcript-text">${text}</div>
+            </div>
+          `;
+        }).join('');
+        
+        transcriptContainer.innerHTML = html;
+        transcriptContainer.scrollTop = transcriptContainer.scrollHeight;
+      }
+
+      // Clear and set insights (replace instead of append)
+      function setInsights(insightsArray) {
+        // Clear existing insights
+        insightsContainer.innerHTML = '';
+        
+        if (insightsArray.length === 0) {
+          insightsContainer.innerHTML = `
+            <div class="empty-insights">
+              <div class="empty-icon">🚀</div>
+              <div>AI insights will appear here as the conversation progresses</div>
+            </div>
+          `;
+          return;
+        }
+
+        // Add all insights
+        insightsArray.forEach(insight => {
+          const insightDiv = document.createElement('div');
+          insightDiv.className = 'insight-item';
+          insightDiv.innerHTML = `
+            <div class="insight-type ${insight.type.toLowerCase()}">${insight.type}</div>
+            <div class="insight-content">${insight.content}</div>
+            <div class="insight-confidence">Confidence: ${insight.confidence || 'High'}</div>
+          `;
+          insightsContainer.appendChild(insightDiv);
+        });
+        
+        insightsContainer.scrollTop = insightsContainer.scrollHeight;
+      }
+
+      // Legacy function for quick actions (single insight)
+      function addSingleInsight(type, content, confidence = 'High') {
+        const currentInsights = Array.from(insightsContainer.querySelectorAll('.insight-item')).map(item => ({
+          type: item.querySelector('.insight-type').textContent,
+          content: item.querySelector('.insight-content').textContent,
+          confidence: item.querySelector('.insight-confidence').textContent.replace('Confidence: ', '')
+        }));
+        
+        // Add new insight and replace all
+        currentInsights.push({ type, content, confidence });
+        setInsights(currentInsights.slice(-5)); // Keep only last 5 insights
+      }
+
+      // Smart analysis timing - prevents endless debouncing while maintaining responsiveness
+      function shouldAnalyze() {
+        const now = Date.now();
+        const timeSinceLastAnalysis = now - lastAnalysisTime;
+        
+        // Don't analyze if already analyzing
+        if (isAnalyzing) return false;
+        
+        // Force analysis if it's been more than 10 seconds since last analysis
+        if (timeSinceLastAnalysis > 10000) return true;
+        
+        // Don't analyze if less than 2 seconds since last analysis (rate limiting)
+        if (timeSinceLastAnalysis < 2000) return false;
+        
+        // Analyze if we have new content and some time has passed
+        return transcripts.length > lastTranscriptCount;
+      }
+
+      // Analyze conversation for sales insights
+      async function analyzeConversation(force = false) {
+        if (transcripts.length === 0) return;
+        
+        // Check if we should analyze (unless forced)
+        if (!force && !shouldAnalyze()) return;
+        
+        isAnalyzing = true;
+        lastAnalysisTime = Date.now();
+        analyzingIndicator.classList.add('active');
+        
+        try {
+          // Get recent conversation context
+          const recentTranscripts = transcripts.slice(-10);
+          const conversationContext = recentTranscripts.map(t => {
+            const data = t.data;
+            const speaker = data?.speaker_name || 'Unknown';
+            const text = data?.transcription?.transcript || data?.transcript || '';
+            return `${speaker}: ${text}`;
+          }).join('\n');
+
+          // Simple AI analysis using OpenAI API
+          const prompt = `As an AI sales coach, analyze this conversation and provide 1-2 specific, actionable sales insights.
+
+Focus on the MOST IMPORTANT insight from:
+- Current objections that need immediate handling
+- Clear opportunities to advance/close the sale
+- Critical rapport issues
+
+Conversation (most recent):
+${conversationContext}
+
+Provide insights in this format:
+TYPE: [Advice/Objection/Opportunity/Warning]
+INSIGHT: [one specific actionable advice in 1-2 sentences]
+
+Maximum 2 insights. Be concise and immediately actionable.`;
+
+          console.log('Sending prompt to LLM:', prompt);
+
+          const response = await fetch('/api/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              message: prompt,
+              chatHistory: [],
+              sessionData: [],
+              transcripts: recentTranscripts
+            })
+          });
+
+          if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+          const reader = response.body.getReader();
+          const decoder = new TextDecoder();
+          let fullResponse = '';
+          
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            
+            const chunk = decoder.decode(value);
+            const lines = chunk.split('\n');
+            
+            for (const line of lines) {
+              if (line.startsWith('data: ')) {
+                const data = line.slice(6);
+                if (data === '[DONE]') continue;
+                
+                try {
+                  const parsed = JSON.parse(data);
+                  if (parsed.content) {
+                    fullResponse += parsed.content;
+                  }
+                } catch (e) {
+                  // Skip invalid JSON
+                }
+              }
+            }
+          }
+
+          // Parse insights from response
+          parseAndDisplayInsights(fullResponse);
+          lastTranscriptCount = transcripts.length;
+
+        } catch (error) {
+          console.error('Analysis error:', error);
+          setInsights([{
+            type: 'Warning',
+            content: 'Unable to analyze conversation at this time. Check your connection.',
+            confidence: 'Low'
+          }]);
+        } finally {
+          analyzingIndicator.classList.remove('active');
+          isAnalyzing = false;
+        }
+      }
+
+      // Parse AI response and display insights
+      function parseAndDisplayInsights(responseText) {
+        const lines = responseText.split('\n');
+        let insights = [];
+        let currentInsight = null;
+        
+        for (const line of lines) {
+          if (line.trim().startsWith('TYPE:')) {
+            if (currentInsight) {
+              insights.push(currentInsight);
+            }
+            const type = line.replace('TYPE:', '').trim();
+            currentInsight = { type, content: '', confidence: 'High' };
+          } else if (line.trim().startsWith('INSIGHT:') && currentInsight) {
+            currentInsight.content = line.replace('INSIGHT:', '').trim();
+          } else if (currentInsight && line.trim()) {
+            currentInsight.content += ' ' + line.trim();
+          }
+        }
+        
+        // Add the last insight
+        if (currentInsight) {
+          insights.push(currentInsight);
+        }
+        
+        // If no structured insights found, create general insight
+        if (insights.length === 0 && responseText.trim()) {
+          insights.push({
+            type: 'Advice',
+            content: responseText.trim() || 'Continue engaging with the prospect and look for buying signals.',
+            confidence: 'Medium'
+          });
+        }
+        
+        // Replace all insights with the new set
+        setInsights(insights);
+      }
+
+      // Generate specific insight on demand
+      function generateInsight(type) {
+        let content = '';
+        let insightType = 'Advice';
+        
+        switch (type) {
+          case 'objections':
+            content = SALES_KNOWLEDGE_BASE.objections.price;
+            insightType = 'Objection';
+            break;
+          case 'closing':
+            const closingTechniques = SALES_KNOWLEDGE_BASE.closingTechniques;
+            content = closingTechniques[Math.floor(Math.random() * closingTechniques.length)];
+            insightType = 'Opportunity';
+            break;
+          case 'rapport':
+            const rapportTips = SALES_KNOWLEDGE_BASE.rapportBuilding;
+            content = rapportTips[Math.floor(Math.random() * rapportTips.length)];
+            insightType = 'Advice';
+            break;
+          case 'summary':
+            if (transcripts.length > 0) {
+              analyzeConversation(true);
+              return;
+            } else {
+              content = 'No conversation data available for summary.';
+              insightType = 'Warning';
+            }
+            break;
+        }
+        
+        addSingleInsight(insightType, content);
+      }
+
+      // Setup SSE connection for real-time updates
+      const es = new EventSource('/stream');
+      
+      es.onopen = () => {
+        statusDot.classList.add('connected');
+        statusText.textContent = 'Connected';
+      };
+      
+      es.onerror = () => {
+        statusDot.classList.remove('connected');
+        statusText.textContent = 'Disconnected';
+      };
+      
+      es.onmessage = (e) => {
+        try {
+          const msg = JSON.parse(e.data);
+          
+          // Handle transcript updates
+          if (msg.source === 'attendee' && msg.trigger === 'transcript.update' && msg.data) {
+            const meetingIdInMsg = msg.meeting_id;
+            const currentMeetingId = getMeetingIdFromUrl();
+            
+            // Only consider transcript updates for the current meeting id
+            if (currentMeetingId !== meetingIdInMsg) return;
+
+            // Create transcript entry
+            const transcript = {
+              id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+              data: msg.data,
+              created_at: new Date().toISOString()
+            };
+            
+            transcripts.push(transcript);
+            renderTranscript();
+            
+            // Trigger immediate analysis
+            analyzeConversation();
+          }          
+        } catch (err) {
+          console.error('Error parsing SSE message:', err);
+        }
+      };
+    </script>
+  </body>
+</html>
