@@ -15,8 +15,8 @@ This shows how to use the Attendee API to implement an AI Sales Coach that uses 
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/noah-duncan/rtms-example
-cd rtms-example
+git clone https://github.com/attendee-labs/rtms-sales-coach-example
+cd rtms-sales-coach-example
 ```
 
 ### 2. Install dependencies
