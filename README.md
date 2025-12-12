@@ -12,6 +12,8 @@ This shows how to use the Attendee API to implement an AI Sales Coach that uses 
 
 ## Setup Instructions
 
+For a video showing these steps, see [here](https://www.youtube.com/watch?v=9LqDkFqXPeU).
+
 ### 1. Clone the Repository
 
 ```bash
