@@ -89,10 +89,10 @@ npm install
 3. Navigate to the Settings -> Credentials section and click the button to add Zoom credentials.
 4. Enter the Client ID and Client Secret of your Zoom RTMS app.
 5. Navigate to the Settings -> Webhooks section and create a new webhook. Have it point to `https://<YOUR NGROK DOMAIN>/attendee-webhook`.
-6. Subscribe to the 'transcript.update' and 'bot.state_change' events.
+6. Subscribe to the `transcript.update` and `bot.state_change` events.
 7. Save the webhook.
 
-### 6. Set the .env file for your local application
+### 6. Set the .env file for your application
 
 Set the following environment variables in the .env file:
    - ATTENDEE_API_KEY=`<YOUR ATTENDEE API KEY>`
@@ -108,4 +108,4 @@ node index.js
 
 ### 8. Join a meeting and test the application
 
-1. Join a meeting in Zoom. Your RTMS app should automatically start streaming the meeting transcript to the Zoom client.
+Join a meeting in Zoom and open your RTMS app. Your RTMS app should automatically start streaming the meeting transcript to the Zoom client and providing coaching tips.
