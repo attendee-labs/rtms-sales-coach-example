@@ -62,7 +62,7 @@ npm install
 8. Save the changes.
 
 9. On the sidebar select 'Surface'.
-10. For home url, enter the url in this format: `<YOUR NGROK URL>/sales_coach?meetingId={meetingUUID}`.
+10. For home url, enter the url in this format: `https://<YOUR NGROK DOMAIN>/sales_coach?meetingId={meetingUUID}`.
 11. For 'Select where to use your app', select 'Meetings'.
 12. For 'In-client App Features', select 'Zoom App SDK'. 
 
@@ -86,7 +86,7 @@ npm install
 2. Navigate to the API Keys section and create a new API key, save this in the .env file as ATTENDEE_API_KEY
 3. Navigate to the Settings -> Credentials section and click the button to add Zoom credentials.
 4. Enter the Client ID and Client Secret of your Zoom RTMS app.
-5. Navigate to the Settings -> Webhooks section and create a new webhook. Have it point to `<YOUR NGROK URL>/attendee-webhook`.
+5. Navigate to the Settings -> Webhooks section and create a new webhook. Have it point to `https://<YOUR NGROK DOMAIN>/attendee-webhook`.
 6. Subscribe to the 'transcript.update' and 'bot.state_change' events.
 7. Save the webhook.
 
