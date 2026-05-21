@@ -96,11 +96,10 @@ app.post('/', async (req, res) => {
     }
 
     if (event === 'meeting.rtms_started') {
+      const { meeting_uuid, rtms_stream_id, server_urls } = payload;
       const response = await axios.post(
         `${ATTENDEE_BASE_URL}/api/v1/app_sessions`,
-        {
-          zoom_rtms: payload,
-        },
+        { zoom_rtms: { meeting_uuid, rtms_stream_id, server_urls } },
         { headers: { Authorization: `Token ${ATTENDEE_API_KEY}` }, timeout: 15000 }
       );
       console.log('Response from App Session Creation:', response.data);
